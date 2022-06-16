@@ -6,7 +6,27 @@ export default class Cart {
   }
 
   addProduct(product) {
-    // ваш код
+
+    if (product === null || product === undefined) {
+      return;
+    }
+
+    let cartItem = this.cartItems.find(function (item, index, array) {
+      return item.product.id === product.id;
+    });
+
+    if (cartItem !== undefined) {
+      cartItem.count++;
+    } else {
+      cartItem = {
+        product,
+        'count': 1
+      };
+      this.cartItems.push(cartItem);
+    }
+
+    // cartItem - обновлённый/новосозданный элемент cartItems
+    this.onProductUpdate(cartItem);
   }
 
   updateProductCount(productId, amount) {
