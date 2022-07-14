@@ -13,23 +13,72 @@ export default class Cart {
   }
 
   addProduct(product) {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    if (product === null || product === undefined) {
+      return;
+    }
+
+    let cartItem = this.cartItems.find(function (item, index, array) {
+      return item.product.id === product.id;
+    });
+
+    if (cartItem !== undefined) {
+      cartItem.count++;
+    } else {
+      cartItem = {
+        product,
+        'count': 1
+      };
+      this.cartItems.push(cartItem);
+    }
+
+    // cartItem - обновлённый/новосозданный элемент cartItems
+    this.onProductUpdate(cartItem);
   }
 
   updateProductCount(productId, amount) {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    let cartItem = this.cartItems.find(function (item, index, array) {
+      return item.product.id === productId;
+    });
+
+    if (cartItem !== undefined && cartItem.count > 0) {
+      if (amount > 0) {
+        cartItem.count++;
+      }
+
+      if (amount < 0) {
+        cartItem.count--;
+      }
+
+      if (cartItem.count === 0) {
+        this.cartItems = this.cartItems.filter(function (item) {
+          return item.product.id !== productId;
+        });
+      }
+
+      this.onProductUpdate(cartItem);
+    }
   }
 
   isEmpty() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    return this.cartItems.length === 0;
   }
 
   getTotalCount() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    let totalCount = 0;
+    for (let cartItem of this.cartItems) {
+      if (cartItem.hasOwnProperty('count')) {
+        totalCount += +cartItem.count;
+      }
+    }
+    return totalCount;
   }
 
   getTotalPrice() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    let totalPrice = 0;
+    for (let cartItem of this.cartItems) {
+      totalPrice += cartItem.product.price * +cartItem.count;
+    }
+    return totalPrice;
   }
 
   renderProduct(product, count) {
@@ -74,8 +123,8 @@ export default class Cart {
           <div class="cart-buttons__info">
             <span class="cart-buttons__info-text">total</span>
             <span class="cart-buttons__info-price">€${this.getTotalPrice().toFixed(
-              2
-            )}</span>
+      2
+    )}</span>
           </div>
           <button type="submit" class="cart-buttons__button btn-group__button button">order</button>
         </div>
