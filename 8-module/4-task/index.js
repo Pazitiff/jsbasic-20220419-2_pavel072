@@ -133,13 +133,50 @@ export default class Cart {
   }
 
   renderModal() {
-    // ...ваш код
+    let modal = new Modal();
+    modal.setTitle('Your order');
+    let product;
+    let body = createElement('<div></div>');
+    for (let cartItem of this.cartItems) {
+      product = this.renderProduct(cartItem.product, cartItem.count);
+
+
+      // @todo - начал писать данный обработчик, но пока застрял на нём
+      product.addEventListener('click', (event) => {
+
+        let button = event.target.closest('.cart-counter__button_plus');
+        if (!button) {
+          return;
+        }
+
+        let addProductId = event.currentTarget.dataset.productId;
+        let productToAdd = this.cartItems.find((item) => item.product.id === addProductId);
+
+        if (productToAdd) {
+          this.addProduct(productToAdd);
+        }
+      });
+
+      body.append(product);
+    }
+
+    body.append(this.renderOrderForm());
+
+    modal.setBody(body);
+    modal.open();
+
+    document.body.append(modal);
+    document.body.classList.add('is-modal-open');
+
   }
 
   onProductUpdate(cartItem) {
-    // ...ваш код
-
     this.cartIcon.update(this);
+
+    // Начал делать
+    if (document.body.classList.contains('is-modal-open')) {
+
+    }
   }
 
   onSubmit(event) {
