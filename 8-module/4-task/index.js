@@ -9,6 +9,7 @@ export default class Cart {
   constructor(cartIcon) {
     this.cartIcon = cartIcon;
     this.addEventListeners();
+    this.modal = new Modal();
   }
 
   addProduct(product) {
@@ -49,6 +50,12 @@ export default class Cart {
 
       if (direction === 'minus') {
         cartItem.count--;
+      }
+
+      if (cartItem.count === 0) {
+        this.cartItems = this.cartItems.filter(function (item) {
+          return item.product.id !== product.product.id;
+        });
       }
     }
 
@@ -153,8 +160,8 @@ export default class Cart {
   }
 
   renderModal() {
-    let modal = new Modal();
-    modal.setTitle('Your order');
+    // let modal = new Modal();
+    this.modal.setTitle('Your order');
     let productItem;
     let body = createElement('<div></div>');
     for (let cartItem of this.cartItems) {
@@ -184,10 +191,10 @@ export default class Cart {
 
     body.append(this.renderOrderForm());
 
-    modal.setBody(body);
-    modal.open();
+    this.modal.setBody(body);
+    this.modal.open();
 
-    document.body.append(modal);
+    document.body.append(this.modal);
     document.body.classList.add('is-modal-open');
 
     let submitBtn = document.body.querySelector('.btn-group__button');
@@ -209,12 +216,50 @@ export default class Cart {
       let newSum = num.toFixed(2);
       productPrice.innerHTML = `€${newSum}`;
       infoPrice.innerHTML = `€${this.getTotalPrice().toFixed(2)}`;
+
+
+      let empty = this.isEmpty();
+      if (empty) {
+        this.modal.close();
+      }
     }
   }
 
   onSubmit(event) {
     event.preventDefault();
-    console.log('submit');
+    let selectors = document.body.querySelectorAll('button[type=submit]');
+    if (selectors[0].classList.contains('cart-buttons__button')) {
+      selectors[0].classList.add('is-loading');
+
+      let submit = async (e) => {
+        // e.preventDefault();
+
+        let cartForm = document.querySelector('.cart-form');
+        let formData = new FormData(cartForm);
+
+        let response = await fetch('https://httpbin.org/post', {
+          method: 'POST',
+          body: formData
+        });
+
+        return await response.status === 200;
+      };
+
+      let result = submit();
+
+      if (result) {
+        this.modal.setTitle('Success!');
+        this.cartItems = [];
+        let body = createElement('<div class="modal__body-inner">\n' +
+          '  <p>\n' +
+          '    Order successful! Your order is being cooked :) <br>\n' +
+          '    We’ll notify you about delivery time shortly.<br>\n' +
+          '    <img src="/assets/images/delivery.gif">\n' +
+          '  </p>\n' +
+          '</div>');
+        this.modal.setBody(body);
+      }
+    }
   }
 
   addEventListeners() {
